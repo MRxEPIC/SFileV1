@@ -12,11 +12,20 @@ from database.database import add_user, del_user, full_userbase, present_user
 
 
 async def delete_file_after_delay(client, message_id, chat_id, delay):
-    await asyncio.sleep(delay)
     try:
+        await asyncio.sleep(delay)
         await client.delete_messages(chat_id, message_id)
+    except FloodWait as e:
+        print(f"Bot is in flood wait. Sleeping for {e.x} seconds.")
+        await asyncio.sleep(e.x)
+        await delete_file_after_delay(client, message_id, chat_id, delay)
+    except UserIsBlocked:
+        print("User is blocked. Skipping message deletion.")
+    except InputUserDeactivated:
+        print("Input user is deactivated. Skipping message deletion.")
     except Exception as e:
         print(f"Error deleting message: {e}")
+
 
 
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
