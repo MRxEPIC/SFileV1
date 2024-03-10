@@ -82,8 +82,7 @@ async def start_command(client: Client, message: Message):
                                               reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
                 await client.send_message(message.from_user.id,
                                           text="❗️❗️❗️<b>IMPORTANT</b>️❗️️❗️\n\nThis Movie File/Video will be deleted in <b><u>30 minutes</u> 🫥 </b>(Due to Copyright Issues).\n\n<b><i>Please forward this File/Video to your Saved Messages and Start Download there.</i></b>",
-                                          parse_mode=ParseMode.HTML,
-                                          reply_to_message_id=sent_message.message_id)
+                                          parse_mode=ParseMode.HTML)
                 asyncio.create_task(delete_file_after_delay(client, sent_message.message_id, sent_message.chat.id, 60))  # 30 minutes delay
                 await asyncio.sleep(0.5)
             except FloodWait as e:
@@ -92,8 +91,7 @@ async def start_command(client: Client, message: Message):
                                               reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
                 await client.send_message(message.from_user.id,
                                           text="❗️❗️❗️<b>IMPORTANT</b>️❗️️❗️\n\nThis Movie File/Video will be deleted in <b><u>30 minutes</u> 🫥 </b>(Due to Copyright Issues).\n\n<b><i>Please forward this File/Video to your Saved Messages and Start Download there.</i></b>",
-                                          parse_mode=ParseMode.HTML,
-                                          reply_to_message_id=sent_message.message_id)
+                                          parse_mode=ParseMode.HTML)
                 asyncio.create_task(delete_file_after_delay(client, sent_message.message_id, sent_message.chat.id, 60))  # 30 minutes delay
             except:
                 pass
@@ -120,6 +118,7 @@ async def start_command(client: Client, message: Message):
             quote=True
         )
         return
+
 
 
 
