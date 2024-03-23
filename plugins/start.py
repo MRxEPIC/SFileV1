@@ -11,20 +11,9 @@ from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 
 
-async def delete_file_after_delay(client, message_id, chat_id, delay):
-    try:
-        await asyncio.sleep(delay)
-        await client.delete_messages(chat_id, message_id)
-    except FloodWait as e:
-        print(f"Bot is in flood wait. Sleeping for {e.x} seconds.")
-        await asyncio.sleep(e.x)
-        await delete_file_after_delay(client, message_id, chat_id, delay)
-    except UserIsBlocked:
-        print("User is blocked. Skipping message deletion.")
-    except InputUserDeactivated:
-        print("Input user is deactivated. Skipping message deletion.")
-    except Exception as e:
-        print(f"Error deleting message: {e}")
+"""add time im seconds for waitingwaiting before delete 
+1min=60, 2min=60×2=120, 5min=60×5=300"""
+SECONDS = int(os.getenv("SECONDS", "1800"))
 
 
 
@@ -72,12 +61,13 @@ async def start_command(client: Client, message: Message):
             await message.reply_text("Something went wrong..!")
             return
         await temp_msg.delete()
-
+        
+        snt_msgs = []
+        
         for msg in messages:
 
             if bool(CUSTOM_CAPTION) & bool(msg.document):
-                caption = CUSTOM_CAPTION.format(previouscaption="" if not msg.caption else msg.caption.html,
-                                                filename=msg.document.file_name)
+                caption = CUSTOM_CAPTION.format(previouscaption = "" if not msg.caption else msg.caption.html, filename = msg.document.file_name)
             else:
                 caption = "" if not msg.caption else msg.caption.html
 
@@ -87,21 +77,22 @@ async def start_command(client: Client, message: Message):
                 reply_markup = None
 
             try:
-                sent_message = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML,
-                                              reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
-                await client.send_message(message.from_user.id,
-                                          text="❗️❗️❗️<b>IMPORTANT</b>️❗️️❗️\n\nThis Movie File/Video will be deleted in <b><u>30 minutes</u> 🫥 </b>(Due to Copyright Issues).\n\n<b><i>Please forward this File/Video to your Saved Messages and Start Download there.</i></b>",
-                                          parse_mode=ParseMode.HTML)
-                asyncio.create_task(delete_file_after_delay(client, sent_message.message_id, sent_message.chat.id, 60))  # 30 minutes delay
+                snt_msg = await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = ParseMode.HTML, reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
                 await asyncio.sleep(0.5)
+                snt_msgs.append(snt_msg)
             except FloodWait as e:
                 await asyncio.sleep(e.x)
-                sent_message = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML,
-                                              reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
-                await client.send_message(message.from_user.id,
-                                          text="❗️❗️❗️<b>IMPORTANT</b>️❗️️❗️\n\nThis Movie File/Video will be deleted in <b><u>30 minutes</u> 🫥 </b>(Due to Copyright Issues).\n\n<b><i>Please forward this File/Video to your Saved Messages and Start Download there.</i></b>",
-                                          parse_mode=ParseMode.HTML)
-                asyncio.create_task(delete_file_after_delay(client, sent_message.message_id, sent_message.chat.id, 60))  # 30 minutes delay
+                snt_msg = await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = ParseMode.HTML, reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
+                snt_msgs.append(snt_msg)
+            except:
+                pass
+        SD = await message.reply_text("❗️❗️❗️<b>IMPORTANT</b>️❗️️❗️\n\nThis Movie File/Video will be deleted in <b><u>30 minutes</u> 🫥 </b>(Due to Copyright Issues).\n\n<b><i>Please forward this File/Video to your Saved Messages and Start Download there.</i></b>")
+        await asyncio.sleep(SECONDS)
+
+        for snt_msg in snt_msgs:
+            try:
+                await snt_msg.delete()
+                await SD.delete()
             except:
                 pass
         return
